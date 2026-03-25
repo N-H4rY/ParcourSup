@@ -1,0 +1,656 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define SOULIGNEMENT printf("\n\t\t\t   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205);
+#define ENCADREMENT_HAUT printf("\n\t\t\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187);
+#define ENCADREMENT_BAS printf("\n\t\t\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188);
+
+typedef struct{
+    char nomFormation[100], avisRendu[10] ;
+} typeDemande ;
+
+typedef struct typeBachelor
+{
+    char nomBachelier[75], typeBacc[20] ;
+    int ageBachelier , nombreFormation ;
+    typeDemande tableauInscription[10];
+} typeBachelier ;
+
+typedef struct { char nomBachelier[75]; float taux; } typeTaux;
+
+
+///Variables globales
+typeBachelier tableauBachelier[30] ;
+typeTaux tableauTauxBachelier[30];
+int comptBachelier=0,
+    comptMediocre=0,
+    reponse=0;
+char* nomBachelierMediocre[30],
+      finDeLigne[1];     //Pour consommer le \0 non consommé par un scanf() avant d'utiliser gets()
+bool saisieNulle=true,  //pour savoir si au moins une lecture de bachelier a été faite
+     aucunMediocre=true;//pour savoir si on a au moins un bachelier médiocre ou non
+
+
+///Prototypes des fonctions utilisées
+void menu(void) ;
+void lecture_de_bachelier(void) ;
+void affichage_des_bacheliers(void) ;
+bool bachelier_accepte(int a);      /** Question 2 */
+void connaitre_si_accepte(void);
+void liste_mediocre(void);          /** Question 3 */
+void afficher_bachelier_mediocre(void);
+void calculer_taux_positif(void);
+void afficher_taux_positif(void);       /** Question 4 */
+void afficher_aucune_lecture(void);
+int erreurReponse( int min, int max, int choix);
+void liste_des_bacheliers(void) ;
+void fin_du_programme(void);
+
+
+
+///FONCTION PRINCIPALE
+int main()
+{
+    ENCADREMENT_HAUT
+    printf("\t\t\t%c     L E S      D E M A N D E S       D '  I N S C R I P T I O N    %c",186,186);
+    ENCADREMENT_BAS
+    menu();
+    return 0 ;
+}
+
+
+
+
+
+/* --------------------------------------------------------------
+    Fonction        : menu()
+    Objectifs       : Choix de l'utilisateur dans le programme
+    Valeur retournée : aucune
+-----------------------------------------------------------------*/
+void menu(void)
+{
+
+    printf("\n\n\n\t\t        %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+    printf("\t\t    %c%c%c%c%c  M  E  N  U  %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,180,195,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+    printf("\t\t    %c   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c                                                         %c\n",179,192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217,179);
+    printf("\t\t    %c  1- Entrer les informations sur un bachelier                               %c\n",179,179);
+    printf("\t\t    %c  2- Afficher les donn%ces d%cj%c enregistr%ces                                 %c\n",179 , 130, 130, 133, 130,179);
+    printf("\t\t    %c  3- Conna%ctre si un bachelier fut acc%cpt%c dans au moins une de ses demandes%c\n" ,179,140 ,130 ,130 ,179);
+    printf("\t\t    %c  4- Afficher la liste des bacheliers ayant eu AUCUN AVIS POSITIF           %c\n",179,179);
+    printf("\t\t    %c  5- Voir les taux d'avis rendus positifs                                   %c\n",179,179);
+    printf("\t\t    %c                                                                            %c\n",179,179);
+    printf("\t\t    %c  0- Quitter le programme                                                   %c\n",179,179);
+    printf("\t\t    %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+    printf("\t\t      -> Entrez votre r%cponse ici : ", 130); scanf("%d", &reponse);
+
+    reponse = erreurReponse(0 , 5 , reponse) ;
+    switch (reponse)
+    {
+        case 0 : fin_du_programme(); break ;
+        case 1 : if (saisieNulle==false){comptBachelier++;};
+                 gets(finDeLigne); lecture_de_bachelier(); break ;
+        case 2 : affichage_des_bacheliers(); break ;
+        case 3 : connaitre_si_accepte(); break;
+        case 4 : afficher_bachelier_mediocre(); break;
+        case 5 : afficher_taux_positif(); break;
+    }
+
+}
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : lecture_de_bachelier()
+    Objectifs       : Lecture des données saisies par l'utilisateur
+    Valeur retournée : aucune
+-----------------------------------------------------------------------*/
+void lecture_de_bachelier(void)
+{
+    int i=0 ;
+    ///Effacer écran + titre
+        system("cls") ;
+        ENCADREMENT_HAUT
+        printf("\t\t\t%c\tC O L L E C T E      D E S      I N F O R M A T I O N S      %c",186,186);
+        ENCADREMENT_BAS
+
+    /// Lecture des info générales
+        printf("\n\t\t\t\BACHELIER N%c %d\n\t\t\t- Nom : ", 167, comptBachelier+1);
+        gets(tableauBachelier[comptBachelier].nomBachelier);
+        printf("\t\t\t- Type de bacc : "); gets(tableauBachelier[comptBachelier].typeBacc) ;
+        printf("\t\t\t- %cge : ",182); scanf("%d", &tableauBachelier[comptBachelier].ageBachelier) ;
+
+    ///Demander le nombre de demandes effectuées
+        printf("\n\n\t\t\t\" %s \" a fait combien de demande d'inscription ?\n                                              -> ", tableauBachelier[comptBachelier].nomBachelier) ;
+        scanf("%d", &tableauBachelier[comptBachelier].nombreFormation) ;
+
+        saisieNulle=false ; //au moins une lecture a été effectuée à partir d'ici
+
+    /// Lecture des info sur les formations demandées
+        for ( i=0 ; i<tableauBachelier[comptBachelier].nombreFormation ; i++)
+        {
+                        printf("\n\t\t\t\t  DEMANDE DE FORMATION N%c %d\n\t\t\t- Nom de la formation : " ,167 ,i+1) ;
+                        gets(finDeLigne) ;
+                        gets(tableauBachelier[comptBachelier].tableauInscription[i].nomFormation) ;
+                        printf("\n\t\t\t     %c%c%c%c%c Avis rendus possible pour une demande : %c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+                        printf("\t\t\t     %c    1- OUI     2- OUI MAIS     3- ATTENTE      4- REFUS   %c\n",179,179);
+                        printf("\t\t\t     %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+                        printf("\t\t\t-> Entrez le num%cro de l'avis re%cu : ", 130 ,135); scanf("%d", &reponse);
+                        puts("");
+
+                        reponse = erreurReponse(1, 4, reponse);
+
+                        switch (reponse)
+                        {   ///Affectation de l'avis correspondant à la réponse de l'utilisateur
+                                case 1 : strcpy(tableauBachelier[comptBachelier].tableauInscription[i].avisRendu," OUI     \0");break;
+                                case 2 : strcpy(tableauBachelier[comptBachelier].tableauInscription[i].avisRendu," OUI MAIS\0");break;
+                                case 3 : strcpy(tableauBachelier[comptBachelier].tableauInscription[i].avisRendu," ATTENTE \0");break;
+                                case 4 : strcpy(tableauBachelier[comptBachelier].tableauInscription[i].avisRendu," REFUS   \0");break;
+                        }
+
+                        if (i==1 || i==3 || i==5)
+                        {       ///Effacer écran + Titre + info générale
+                                system("cls"); SOULIGNEMENT puts("\t\t\t\t  C O L L E C T E     D E S     I N F O R M A T I O N S"); SOULIGNEMENT
+                                printf("\n\t\t\t\BACHELIER N%c %d\n\t\t\t- Nom : %s\n", 167, comptBachelier+1 ,tableauBachelier[comptBachelier].nomBachelier);
+                                printf("\t\t\t- Type de bacc : %s\n",tableauBachelier[comptBachelier].typeBacc) ;
+                                printf("\t\t\t- %cge : %d\n",182 ,tableauBachelier[comptBachelier].ageBachelier) ;
+                        }
+            }
+
+
+        ///Effacer écran + titre
+            system("cls") ; ENCADREMENT_HAUT
+            printf("\t\t\t%c\tC O L L E C T E      D E S      I N F O R M A T I O N S      %c",186,186);
+            ENCADREMENT_BAS
+
+        ///Note que les info saisies sont enregistrées
+            printf("\n\n\n\t\t\t\tPour %c %s %c :",174, tableauBachelier[comptBachelier].nomBachelier, 175);
+            printf("\n\n\a\a\a\t\t\t\t  %c%c%c%c%c N  O  T  E %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+            printf("\t\t\t\t  %c\t   DONN%cES ENREGISTR%cES AVEC SUCC%cS       %c\n",179,144 ,144,212,179 );
+            if ( tableauBachelier[comptBachelier].nombreFormation==0 ) printf("\t\t\t\t  %c\t    << AUCUNE DEMANDE EFFECTU%cE >>        %c\n",179,144,179);
+            printf("\t\t\t\t  %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217) ;
+
+        ///Que faire maintenant?
+            menu();
+}
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : affichage_des_bacheliers()
+    Objectifs       : Affichage des données saisies par l'utilisateur
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void affichage_des_bacheliers(void)
+{
+    int i, j;
+
+        system("cls") ; ENCADREMENT_HAUT
+        printf("\t\t\t%c        D O N N %c E S     A C T U E L L E S  : %4d   BACHELIERS    %c" ,186 ,144 ,saisieNulle==true?0:comptBachelier+1 ,186);
+        ENCADREMENT_BAS
+
+        if (saisieNulle==true) afficher_aucune_lecture();   //Si aucune donnée en main: afficher un message correspondant
+        else
+        {
+                for ( i=0; i<=comptBachelier; i++)
+                {
+                    printf("\n\t\t\t    INFO G%cN%cRALES :",144, 144);
+                    printf("\n\t\t\t      - Nom                : %s\n\t\t\t      - Type de Bacc       : %s\t\t  - %cge: %d" ,tableauBachelier[i].nomBachelier ,tableauBachelier[i].typeBacc ,182 ,tableauBachelier[i].ageBachelier );
+                    printf("\n\t\t\t      - Nombre de demandes : %d \n", tableauBachelier[i].nombreFormation);
+                    puts("\n\t\t\t    INFO SUR LES INSCRIPTIONS :");
+                    printf("\t\t\t        Avis  Rendus\t\t    Nom de la formation\n\n");
+
+                    for ( j=0; j<tableauBachelier[i].nombreFormation; j++ )
+                        printf("\t\t\t      -  %s  \t\t  %s\n",tableauBachelier[i].tableauInscription[j].avisRendu ,tableauBachelier[i].tableauInscription[j].nomFormation);
+
+                    SOULIGNEMENT
+                }
+
+                ///Que faire maintenant?
+                menu();
+        }
+
+}
+
+
+
+
+
+/* ---------------------------------------------------------------
+    Fonction            : bachelier_accepté
+    Objectifs           : -Répondre à la 2ième question du projet
+                          -Vérifier pour un bachelier si
+                            au moins un avis est positif
+    Paramètres          : entier a (indice du bachelier)
+    Valeur retournée    : Booléenne
+                        - vrai(au moins 1 avis positif)
+                        - faux (0 avis positif ou 0 demande)
+-------------------------------------------------------------------*/
+bool bachelier_accepte(int a)
+{
+    int i;
+    bool ouiTrouve=false;
+
+    for ( i=0; i<tableauBachelier[a].nombreFormation; i++)
+    {
+        if  ( (strcmp(tableauBachelier[a].tableauInscription[i].avisRendu, " OUI     \0" )==0)
+            ||(strcmp(tableauBachelier[a].tableauInscription[i].avisRendu, " OUI MAIS\0" )==0) )
+            {ouiTrouve=true;}
+    }
+     return(ouiTrouve);
+}
+
+
+
+
+
+
+/* ------------------------------------------------------
+    Fonction        : connaitre_si_accepte()
+    Objectifs       : Connaître pour un bachelier s'il a
+                        eu au moins un avis positif
+    Valeur retournée : aucune
+--------------------------------------------------------*/
+void connaitre_si_accepte(void)
+{
+    int i;
+        system("cls");
+        ENCADREMENT_HAUT
+        printf("\t\t\t%c\tA U     M O I N S      U N     A V I S     P O S I T I F     %c",186 ,186);
+        ENCADREMENT_BAS
+
+        ///Demander à l'utilisateur si l'étude comporte sur un bachelier déjà lu au clavier ou non
+            printf("\n\n\t\t\t        %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+            printf("\t\t\t     %c%c%c%c Choisir sur qui faire l'%ctude : %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,180,130,195,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+            printf("\t\t\t     %c  %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c                    %c\n",179,192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217,179);
+            printf("\t\t\t     %c  1- Un bachelier de notre base de donn%ces actuelle      %c\n" ,179,130,179);
+            printf("\t\t\t     %c  2- Un nouveau bachelier (Ajouter un nouveau bachelier) %c\n",179,179);
+            printf("\t\t\t     %c                                                         %c",179,179);
+            printf("\n\t\t\t     %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+            printf("\t\t\t       -> Entrez votre r%cponse ici : "); scanf("%d", &reponse);
+
+        reponse = erreurReponse(1, 2, reponse);     //Vérification de la réponse
+
+        switch (reponse)
+        {
+            case 1 : ///Effacer écran + titre
+                        system("cls") ; ENCADREMENT_HAUT
+                        printf("\t\t\t%c\tA U     M O I N S      U N     A V I S     P O S I T I F     %c",186 ,186);
+                        ENCADREMENT_BAS
+
+                        liste_des_bacheliers();     //fonction affichant la liste des bacheliers lus au clavier
+
+                        printf("\t\t\t\tEntrez le num%cro du bachelier : ", 130); scanf("%d", &reponse);
+                        reponse = erreurReponse(1, comptBachelier+1 , reponse); //Vérificat° réponse
+
+                        system("cls") ; ENCADREMENT_HAUT
+                        printf("\t\t\t%c\tA U     M O I N S      U N     A V I S     P O S I T I F     %c",186 ,186);
+                        ENCADREMENT_BAS
+                        printf("\n\n\n\t\t\t\tPour %c %s %c :",174 ,tableauBachelier[reponse-1].nomBachelier,175);
+                        if( bachelier_accepte(reponse-1)==true)
+                        {///Affichage si le bachelier a un avis positif au moins
+                            printf("\n\n\a\a\a\n\t\t\t                     %c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,187);
+                            printf("\t\t\t   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c V R A I %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,185,204,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187);
+                            printf("\t\t\t   %c                 %c%c%c%c%c%c%c%c%c%c%c                                   %c\n",186,200,205,205,205,205,205,205,205,205,205,188,186);
+                            printf("\t\t\t   %c     << Ce bachelier a re%cu au moins un avis positif. >>       %c\n" ,186,135,186);
+                            printf("\t\t\t   %c                                                               %c\n",186,186);
+                            printf("\t\t\t   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188);
+                        }
+                        else
+                        {///Affichage si tout avis est négatif ou 0 demande
+                            printf("\n\n\a\a\a\n\t\t\t                     %c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,187);
+                            printf("\t\t\t   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c F A U X %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,185,204,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187);
+                            printf("\t\t\t   %c                 %c%c%c%c%c%c%c%c%c%c%c                                   %c\n",186,200,205,205,205,205,205,205,205,205,205,188,186);
+                            printf("\t\t\t   %c\t << Ce bachelier n'a re%cu que des  AVIS  N%cGATIFS          %c\n",186 , 135, 144, 186);
+                            printf("\t\t\t   %c\t      ou bien, n'a fait AUCUNE DEMANDE d'inscription >>    %c\n" ,186,186);
+                            printf("\t\t\t   %c  \t\t\t\t\t\t\t\t   %c\n",186,186);
+                            printf("\t\t\t   %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188);
+                        }
+
+                        ///Demander la suite à l'utilisateur
+                           menu();
+
+
+                case 2 : if (saisieNulle==false) comptBachelier++;
+                         gets(finDeLigne); lecture_de_bachelier(); break;
+        }
+}
+
+
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : liste_mediocre()
+    Objectifs       :- Réponse à la 3ième question du projet
+                     - Mettre dans un tableau le nom des bacheliers
+                    n'ayant reçu que des avis négatifs (ATTENTE ou REFUS)
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void liste_mediocre(void)
+{
+    int i, j, k;
+    bool mauvais,
+         memeNom;
+
+    ///parcourir tous les bacheliers
+        for ( i=0; i<=comptBachelier; i++)
+            {
+                mauvais=true;
+
+                ///parcourir toutes les demandes du bachelier
+                    for ( j=0; j<tableauBachelier[i].nombreFormation; j++)
+                    {   ///trouver ceux qui ont seulement des avis négatifs
+                            if  (  (strcmp(tableauBachelier[i].tableauInscription[j].avisRendu, " OUI     \0" )==0)
+                                || (strcmp(tableauBachelier[i].tableauInscription[j].avisRendu, " OUI MAIS\0" )==0) )
+
+                                    { mauvais=false; }
+                    }
+
+                    if ( mauvais==true )
+                    {
+                        aucunMediocre=false;    //on atrouvé au moins un médiocre
+
+                        if (comptMediocre==0)   //La liste des médiocres est encore vide
+                        {   ///Ajouter le nom dans la liste
+                                nomBachelierMediocre[comptMediocre]=tableauBachelier[i].nomBachelier ;
+                                comptMediocre++;        //incrémenter le nombre de médiocre
+                        }
+
+                        else
+                        {   ///parcourir la liste des médiocres
+                                memeNom=false;
+                                for ( k=0; k<comptMediocre; k++)
+                                {   ///Vérifier que ce nom n'est pas déjà dans la liste
+                                        if ( strcmp(nomBachelierMediocre[k],tableauBachelier[i].nomBachelier)==0 )
+                                                memeNom=true;   //Le nom figure déjà dans la liste
+                                }
+
+                                if (memeNom==false)      //si le nom n'est pas dans la liste
+                                    {   ///Ajouter ce nom dans la liste
+                                            nomBachelierMediocre[comptMediocre]=tableauBachelier[i].nomBachelier ;
+                                            comptMediocre++;        //incrémenter le nombre de médiocre
+                                    }
+                        }
+                    }
+            }
+}
+
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : liste_des_bacheliers()
+    Objectifs       : Afficher la liste des noms des bacheliers lus au clavier
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void afficher_bachelier_mediocre(void)
+{
+    int i;
+
+    ///Effacer écran + titre
+        system("cls");
+        ENCADREMENT_HAUT
+        printf("\t\t\t%c\t   A U C U N         A V I S          P O S I T I F          %c",186 ,186);
+        ENCADREMENT_BAS
+
+    ///affichage si aucune donnée lue au préalable
+        if (saisieNulle==true) afficher_aucune_lecture();
+
+        else
+            {
+                ///Appel de la fonction liste_mediocre()
+                    liste_mediocre();
+
+                    if (aucunMediocre==true)
+                    {///Affichage si chaque bachelier a au moins un avis positif
+                            printf("\n\n\a\a\a\n\t\t\t                  %c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,191);
+                            printf("\n\t\t\t      %c%c%c%c%c%c%c%c%c%c%c%c%c N O T E %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,196,196,180,195,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+                            printf("\n\t\t\t      %c           %c%c%c%c%c%c%c%c%c%c%c                                   %c",179,192,196,196,196,196,196,196,196,196,196,217,179);
+                            printf("\n\t\t\t      %c  << CHAQUE BACHELIER A EU AU MOINS UN AVIS POSITIF. >>  %c\n" ,179,179);
+                            printf("\t\t\t      %c                                                         %c\n",179,179);
+                            printf("\t\t\t      %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+
+                            menu();
+                    }
+
+                    else
+                    {///Affichage de la liste des bacheliers médiocres
+                            printf("\n\t\t\t\t %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+                            printf("\n\t\t\t\t %c  Liste  des  bacheliers  : %c",179,179);
+                            printf("\n\t\t\t\t %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+
+                            for (i=0; i<comptMediocre; i++)
+                                printf("\t\t\t\t   %d- %s\n",i+1 ,nomBachelierMediocre[i]);
+
+
+                            menu();
+                    }
+            }
+}
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : calculer_taux_positif()
+    Objectifs       : - Calculer le taux d'avis positif pour chaque
+                          bachelier
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void calculer_taux_positif(void)
+{
+    int i, j;
+    float comptPositif=0;
+
+    ///Parcourir le tableau des bacheliers
+        for (i=0; i<=comptBachelier; i++)
+        {
+            comptPositif=0;
+            ///Parcourir les demandes pour chaque bachelier
+                for (j=0; j<tableauBachelier[i].nombreFormation; j++)
+                {   ///Compter les avis rendus positifs
+                        if  ( (strcmp(tableauBachelier[i].tableauInscription[j].avisRendu, " OUI     \0" )==0)
+                            ||(strcmp(tableauBachelier[i].tableauInscription[j].avisRendu, " OUI MAIS\0" )==0) )
+                            { comptPositif++ ; }
+                }
+            ///Affecter le taux positif et nom dans un tableau
+                tableauTauxBachelier[i].taux = tableauBachelier[i].nombreFormation==0 ? 0 : comptPositif/tableauBachelier[i].nombreFormation ;
+                strcpy(tableauTauxBachelier[i].nomBachelier, tableauBachelier[i].nomBachelier) ;
+        }
+}
+
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : afficher_taux_positif()
+    Objectifs       : - Afficher taux positif pour chaque bachelier
+                      - Afficher la moyenne des taux positifs
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void afficher_taux_positif(void)
+{
+    int i;
+    float somme=0;
+
+    ///Effacer écran + titre
+        system("cls") ; ENCADREMENT_HAUT
+        printf("\t\t\t%c\tL E S      T A U X       D' A V I S      P O S I T I F       %c",186 ,186);
+        ENCADREMENT_BAS
+
+        if (saisieNulle==true) afficher_aucune_lecture();
+        else
+        {
+                calculer_taux_positif();
+            ///Afficher nom et taux pour chaque bachelier + calculde la somme des taux
+                printf("\n\n\t\t\t    %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c           %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191,218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+                printf("\t\t\t    %c Taux d'avis rendus positif  %c           %c Nom du bachelier %c\n",179,179,179,179);
+                printf("\t\t\t    %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c           %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217,192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+
+                for (i=0; i<=comptBachelier; i++)
+                {
+                        somme+=tableauTauxBachelier[i].taux;
+                        printf("\t\t\t               %2.2f                           %s\n",tableauTauxBachelier[i].taux, tableauTauxBachelier[i].nomBachelier);
+                }
+
+            ///Affichage de la moyenne des taux d'avis rendus positif
+            printf("\n\n\t\t\t    %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187);
+            printf("\t\t\t      La moyenne des taux d'avis rendus positifs est de : %2.2f%c \n",somme*100/(comptBachelier+1),37);
+            printf("\t\t\t    %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188);
+        }
+
+        menu();
+}
+
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : liste_des_bacheliers()
+    Objectifs       : Afficher la liste des noms des bacheliers lus au clavier
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void liste_des_bacheliers(void)
+{
+    int i;
+
+    if (saisieNulle==true)      //Aucune donnée n'a été lue au préalable
+        afficher_aucune_lecture();
+    else
+    {///Afficher les noms des bacheliers lus au préalable
+        printf("\n\t\t\t\t %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+        printf("\n\t\t\t\t %c Liste actuelle des bacheliers : %c",179,179);
+        printf("\n\t\t\t\t %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+        for ( i=0; i<=comptBachelier; i++)
+            printf("\t\t\t\t   %d- %s\n" ,i+1 ,tableauBachelier[i].nomBachelier);
+        SOULIGNEMENT
+    }
+}
+
+
+
+
+
+
+/* ------------------------------------------------------------------
+    Fonction        : afficher_aucune_lecture()
+    Objectifs       : Affichage une note qu'aucune donnée n'a encore été lue
+    Valeur retournée : aucune
+-------------------------------------------------------------------*/
+void afficher_aucune_lecture(void)
+{   ///Note qu'on a aucune donnée
+        printf("\n\n\a\a\a\n\t\t\t                  %c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,191);
+        printf("\n\t\t\t      %c%c%c%c%c%c%c%c%c%c%c%c%c N O T E %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",218,196,196,196,196,196,196,196,196,196,196,196,180,195,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+        printf("\n\t\t\t      %c           %c%c%c%c%c%c%c%c%c%c%c                                   %c",179,192,196,196,196,196,196,196,196,196,196,217,179);
+        printf("\n\t\t\t      %c        << AUCUNE DONN%cE ENREGISTR%CE ACTUELLEMENT >>     %c\n" ,179,144 ,144,179);
+        printf("\t\t\t      %c                                                         %c\n",179,179);
+        printf("\t\t\t      %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+
+    ///Que faire maintenant?
+        menu();
+}
+
+
+
+
+
+
+/* -------------------------------------------------------------------
+    Fonction        : erreurReponse()
+    Objectifs       : Afficher un messsage d'erreur jusqu'à
+                        une réponse valide de l'utilisateur
+    Paramètres       : 3 entiers:
+                     - min, max: valeurs comprenant la réponse valide
+                     - choix: réponse de l'utilisateur
+    Valeur retournée : entier: une réponse valide
+----------------------------------------------------------------------*/
+int erreurReponse( int min, int max, int choix)
+{
+    while ( (choix<min) || (choix>max) )
+    {
+        printf("\a\n\t\t\t\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c E R R E U R %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",218,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,191);
+        printf("\t\t\t\t%c\t<<  %d  est une R%CPONSE INVALIDE!! >>        %c\n\t\t\t\t%c      Veuillez entrer un num%cro entre %d et %d       %c\n" ,179,choix ,144 ,179,179,130 ,min ,max ,179);
+        printf("\t\t\t\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",192,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,196,217);
+        printf("\t\t\t\t\t -> Entrez votre r%cponse ici : ", 130); scanf("%d", &choix);
+    }
+    return choix;
+}
+
+
+
+
+
+
+/* --------------------------------------------------------------
+    Fonction        : fin_du_programme()
+    Objectifs       : Affichage quand on quitte le programme
+    Valeur retournée : aucune
+-----------------------------------------------------------------*/
+void fin_du_programme(void)
+{
+            system("cls"); system("color 0c");
+            printf("\a\t\t\t  %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c  \n",207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207);
+            //printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c\t\t     %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\t\t        %c\n",207,201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187,207);
+            printf("\t\t\t%c\t\t     %c   F I N   D U   P R O G R A M M E   %c\t\t        %c\n",207,186,186,207);
+            printf("\t\t\t%c\t\t     %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\t\t        %c\n",207,200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c   - Nom du programme  : %c ParcourSup %c                                        %c\n",207,174,175,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c   - Objectif          : On  veut  g%crer  les  DEMANDES  D ' INSCRIPTION       %c\n",207,130,207);
+            printf("\t\t\t%c                       pour  chaque  formation  de  l'enseignement  sup%crieur  %c\n",207,130,207);
+            printf("\t\t\t%c                       pour  chaque  titulaire  du  baccalaur%cat .             %c\n",207,130,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c   - Auteur            : ANDRIANARIMANANA  Ny  Hary  Aina  Fanilo              %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c   - Contact           : nyharyainafanilo%cgmail.com                            %c\n",207,64,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t%c                                                                 M E R C I...  %c\n",207,207);
+            printf("\t\t\t%c                                                                               %c\n",207,207);
+            printf("\t\t\t  %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c  ",207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207,207);
+            exit(EXIT_SUCCESS);
+}
+
+
+
+
+/** PROBLEME 1 (--Résolu--): L'espace est une fin de le ligne pour scanf()
+    SOLUTION : Utilisation d'une succession de deux fonctions gets()
+    ex : Dans la chaîne "Jean Philipes DUBOIS" ,
+        La valeur stockée avec scanf() est "Jean"
+
+--------------------------------><----------------------------------
+
+    PROBLEME 2 : type de valeur incompatible
+    SOLUTION EVENTUELLE : utilisation de sscanf()
+    Le programme boggue si le type de la réponse saisie par l'utilisateur diffère de
+    celui attendu au clavier.
+
+    ex: le programme attend une valeur de type int
+        l'utilisateur entre un ou une suite de caractères,
+        Alors le programme entre dans une boucle infinie ou
+        s'arrête prématurément!
+*/
